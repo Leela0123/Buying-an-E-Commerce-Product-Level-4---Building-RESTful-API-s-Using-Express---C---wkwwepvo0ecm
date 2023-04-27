@@ -5,35 +5,65 @@ const app = express();
 
 // Importing products from products.json file
 const products = JSON.parse(
-    fs.readFileSync(`${__dirname}/data/products.json`)
+    fs.readFileSync(`${__dirname}/data/product.json`)
 );
 
 
 // Middlewares
 app.use(express.json());
 
-// PATCH endpoint to buy a product
-app.patch('/api/v1/products/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  
-  // find product with the given id
-  const product = products.find(product => product.id === id);
-  
-  // if product not found, return 404 error
-  if (!product) {
-    return res.status(404).json({ message: 'Product not found' });
-  }
-  
-  // check if product is out of stock
-  if (product.quantity === 0) {
-    return res.status(404).json({ message: 'Product out of stock' });
-  }
-  
-  // update product quantity and return the updated product list
-  product.quantity--;
-  fs.writeFileSync(`${__dirname}/data/products.json`, JSON.stringify(products));
-  res.status(200).json(products);
+// PATCH endpoint for updating product data
+app.patch('/api/v1/products/:id',(req,res)=>{
+    const id = req.params.id * 1;
+    const product = products.find(product => product.id===id);
+    if (!product){
+        return res.status(404).send({
+            status: "failed",
+            message: "Product not found!"
+        })
+    }
+
+    product.quantity -= 1;
+
+    if(product.quantity>=0){
+        return res.status(200).json({
+                status : "success",
+                message :`Thank you for purchasing ${product.name}`,
+                product 
+        });
+    }
+
+    
+    return res.status(404).json({
+        status : "success",
+        message :`${product.name}, Out of stock!`,
+    });
+
+    
 });
 
 
+
 module.exports = app;
+
+// const fs = require('fs');
+// const express = require('express');
+// const app = express();
+
+
+// // Importing products from products.json file
+// const products = JSON.parse(
+//     fs.readFileSync(`${__dirname}/data/product.json`)
+// );
+
+
+// // Middlewares
+// app.use(express.json());
+
+// // Write PATCH endpoint to buy a product for the client here
+// // Endpoint /api/v1/products/:id
+
+
+
+
+// module.exports = app;
